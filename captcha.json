@@ -1,7 +1,6 @@
 {
-  "siteName": "ROBLOZX",
+  "siteName": "Vestel Güvenlik",
   "logoUrl": "https://upload.wikimedia.org/wikipedia/commons/thumb/c/c8/Vestel_logo.svg/512px-Vestel_logo.svg.png",
-  "captchaType": "math", 
-  "difficulty": "medium",
-  "successMessage": "Bot olmadığınız doğrulandı! Oyuna yönlendiriliyorsunuz..."
+  "themeColor": "#00539b",
+  "successMessage": "Doğrulama Başarılı! Jeton oluşturuldu."
 }
