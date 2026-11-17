@@ -1,0 +1,51 @@
+<!DOCTYPE html>
+<html lang="tr">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Roblozx — Online Oyun Platformu</title>
+  <link rel="stylesheet" href="style.css">
+</head>
+<body>
+  <!-- Üst Bar -->
+  <header class="topbar">
+    <div class="logo">🎮 ROBLOZX</div>
+    <div class="search-box">
+      <input type="text" id="searchInput" placeholder="Oyun ara...">
+    </div>
+    <div class="user-info">
+      <span class="online-dot"></span>
+      <span id="onlineCount">0 çevrimiçi</span>
+    </div>
+  </header>
+
+  <!-- Ana İçerik -->
+  <main class="container">
+    <h1 class="page-title">Oyunlar</h1>
+    <div class="games-grid" id="gamesGrid">
+      <!-- Oyunlar buraya yüklenecek -->
+    </div>
+  </main>
+
+  <!-- Yükleniyor Ekranı -->
+  <div class="loading-overlay" id="loadingOverlay">
+    <div class="loader-card">
+      <div class="spinner"></div>
+      <h2 id="loadingTitle">Oyun Yükleniyor...</h2>
+      <p id="loadingStatus">GitHub'dan veri çekiliyor...</p>
+      <div class="progress-bar"><div class="progress-fill" id="progressFill"></div></div>
+    </div>
+  </div>
+
+  <!-- Oyun Görüntüleyici -->
+  <div class="game-viewer" id="gameViewer">
+    <div class="viewer-header">
+      <button class="close-btn" onclick="closeGame()">✕ Kapat</button>
+      <span id="viewerTitle">Oyun</span>
+    </div>
+    <iframe id="gameFrame" sandbox="allow-scripts allow-same-origin allow-forms allow-popups"></iframe>
+  </div>
+
+  <script src="app.js"></script>
+</body>
+</html>
