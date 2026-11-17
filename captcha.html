@@ -3,9 +3,9 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>Vestel CAPTCHA Doğrulama</title>
+<title>Vestel CAPTCHA</title>
 <style>
-  /* Kutunun içindeki tasarım */
+  /* Widget'ın kendi tasarımı */
   :root {
     --bg: #1a1d2d;
     --border: rgba(255,255,255,0.1);
@@ -15,17 +15,19 @@
     --success: #10b981;
   }
 
+  * { margin: 0; padding: 0; box-sizing: border-box; font-family: 'Segoe UI', sans-serif; }
+
+  /* Arka planı şeffaf yapıyoruz ki iframe ile eklendiğinde siteye tam otursun */
   body { 
-    margin: 0; padding: 0;
-    background: transparent; /* Arka planı şeffaf yapar, siteye tam oturur */
-    font-family: 'Segoe UI', sans-serif; 
+    background: transparent; 
     display: flex; 
     justify-content: center; 
     align-items: center;
     height: 100vh;
+    overflow: hidden;
   }
 
-  /* Mini CAPTCHA Kutusu */
+  /* Dikdörtgen CAPTCHA Kutusu */
   .captcha-widget {
     width: 320px;
     background: var(--bg);
@@ -36,27 +38,28 @@
     box-sizing: border-box;
   }
 
-  /* 1. Yükleniyor Ekranı */
+  /* 1. Yükleniyor */
   .loading-state { display: flex; align-items: center; gap: 10px; color: var(--text-muted); font-size: 14px; }
   .spinner { width: 20px; height: 20px; border: 2px solid var(--border); border-top-color: var(--primary); border-radius: 50%; animation: spin 1s linear infinite; }
   @keyframes spin { to { transform: rotate(360deg); } }
 
-  /* 2. Hata Ekranı (Key Geçersizse) */
-  .error-state { display: none; color: var(--danger); font-size: 14px; font-weight: 600; align-items: center; gap: 10px; }
+  /* 2. Hata (Key Geçersizse) */
+  .error-state { display: none; color: var(--danger); font-size: 14px; font-weight: 600; align-items: flex-start; gap: 10px; }
+  .error-state div { display: flex; flex-direction: column; gap: 5px; }
+  .error-debug { font-size: 11px; color: var(--text-muted); font-weight: normal; }
   
-  /* 3. Doğrulama Ekranı (Key Geçerliyse) */
+  /* 3. Doğrulama Ekranı (Soru) */
   .verify-state { display: none; flex-direction: column; gap: 10px; }
   .verify-header { display: flex; align-items: center; gap: 10px; font-size: 13px; color: var(--text-muted); }
-  .verify-header img { height: 20px; }
+  .verify-header img { height: 22px; object-fit: contain; }
   .verify-question { font-size: 18px; font-weight: 800; text-align: center; color: #fff; background: rgba(0,0,0,0.2); padding: 8px; border-radius: 6px; letter-spacing: 1px; }
   .verify-input-group { display: flex; gap: 8px; }
   .verify-input-group input { flex: 1; padding: 8px 12px; background: rgba(0,0,0,0.2); border: 1px solid var(--border); border-radius: 6px; color: #fff; text-align: center; outline: none; }
   .verify-btn { padding: 8px 15px; background: var(--primary); border: none; border-radius: 6px; color: #fff; font-weight: bold; cursor: pointer; }
 
-  /* 4. Başarı Ekranı */
+  /* 4. Başarılı */
   .success-state { display: none; color: var(--success); font-size: 14px; font-weight: 600; align-items: center; gap: 10px; }
 
-  /* Animasyonlar */
   @keyframes shake { 0%,100% { transform: translateX(0); } 25% { transform: translateX(-5px); } 75% { transform: translateX(5px); } }
   .shake { animation: shake 0.3s ease; border-color: var(--danger) !important; }
 </style>
@@ -67,17 +70,20 @@
     
     <div class="loading-state" id="loadingState">
       <div class="spinner"></div>
-      <span>Güvenlik kontrolü...</span>
+      <span>Anahtar kontrol ediliyor...</span>
     </div>
 
     <div class="error-state" id="errorState">
-      <svg fill="none" stroke="currentColor" viewBox="0 0 24 24" width="20"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 8v4m0 4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z"></path></svg>
-      <span id="errorMsg">Hata: Geçersiz Key</span>
+      <svg fill="none" stroke="currentColor" viewBox="0 0 24 24" width="20" style="flex-shrink:0;"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 8v4m0 4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z"></path></svg>
+      <div>
+        <span id="errorMsg">Hata</span>
+        <span class="error-debug" id="errorDebug"></span>
+      </div>
     </div>
 
     <div class="verify-state" id="verifyState">
       <div class="verify-header">
-        <img src="https://upload.wikimedia.org/wikipedia/commons/thumb/c/c8/Vestel_logo.svg/512px-Vestel_logo.svg.png" alt="Vestel">
+        <img src="https://cdn.worldvectorlogo.com/logos/vestel-1.svg" alt="Vestel" onerror="this.style.display='none'">
         <span>Robot değilim</span>
       </div>
       <div class="verify-question" id="wQuestion">... + ... = ?</div>
@@ -95,11 +101,11 @@
   </div>
 
   <script>
-    // GitHub'daki JSON dosyanın linki (Bunu kendi repona göre ayarla)
-    const GITHUB_KEY_JSON_URL = "https://raw.githubusercontent.com/scptr1155-gif/roblozx/main/key.json";
+    // ================= AYARLAR =================
+    const GITHUB_KEY_JSON_URL = "https://raw.githubusercontent.com/scptr1155-gif/roblozx/main/keys.json";
     
-    // Ana sitenden gelen parametreleri al (Site Key)
-    // Örnek: captcha.html?key=site_01s1b7mpae
+    // URL'den hangi anahtarın istendiğini alıyoruz
+    // Örnek kullanım: captcha.html?key=site_01s1b7mpae
     const urlParams = new URLSearchParams(window.location.search);
     const siteKey = urlParams.get('key'); 
 
@@ -109,55 +115,59 @@
       await validateKey();
     });
 
-    // ANAHTAR DOĞRULAMA MANTIĞI
+    // ================= ANAHTAR DOĞRULAMA =================
     async function validateKey() {
-      if (!siteKey) {
-        return showError("Hata: Site Key eksik!");
-      }
+      if (!siteKey) return showError("Hata: Site Key eksik!");
 
       try {
-        // GitHub'dan key.json dosyasını çek
-        const res = await fetch(GITHUB_KEY_JSON_URL + "?t=" + Date.now());
+        // Önbelleği kır
+        const res = await fetch(GITHUB_KEY_JSON_URL + "?nocache=" + Math.random());
         const data = await res.json();
         
-        // Gelen key'i listede ara
+        // Anahtarı JSON'da ara
         const keyData = data.keys.find(k => k.siteKey === siteKey);
 
         if (!keyData) {
-          return showError("Hata: Key sistemde bulunamadı!");
+          return showError("Hata: Geçersiz Site Key!");
         }
 
         // Süre kontrolü
         const expireDate = new Date(keyData.expires);
         const today = new Date();
+        today.setHours(0, 0, 0, 0);
+        expireDate.setHours(0, 0, 0, 0);
+
         if (today > expireDate) {
           return showError("Hata: Key süresi dolmuş!");
         }
 
-        // Her şey normalse Soruyu aç
+        // Her şey normalse soruyu göster
         document.getElementById("loadingState").style.display = "none";
         document.getElementById("verifyState").style.display = "flex";
         generateQuestion();
 
       } catch (e) {
-        showError("Bağlantı Hatası!");
+        showError("Bağlantı Hatası!", "key.json okunamadı.");
       }
     }
 
-    function showError(msg) {
+    // ================= HATA GÖSTER =================
+    function showError(msg, debugMsg = "") {
       document.getElementById("loadingState").style.display = "none";
       document.getElementById("errorState").style.display = "flex";
       document.getElementById("errorMsg").textContent = msg;
+      document.getElementById("errorDebug").textContent = debugMsg;
       
       const widget = document.getElementById("captchaWidget");
       widget.classList.add("shake");
-      
-      // Ana siteye hata mesajı gönder
+
+      // ANA SİTEYE HATA MESAJI GÖNDER
       if (window.parent !== window) {
         window.parent.postMessage({ type: "CAPTCHA_ERROR", message: msg }, "*");
       }
     }
 
+    // ================= SORU ÜRET =================
     function generateQuestion() {
       const n1 = Math.floor(Math.random() * 10) + 1;
       const n2 = Math.floor(Math.random() * 10) + 1;
@@ -168,22 +178,31 @@
       document.getElementById("wAnswer").addEventListener("keypress", (e) => {
         if (e.key === "Enter") checkAnswer();
       });
+      
+      setTimeout(() => document.getElementById("wAnswer").focus(), 100);
     }
 
+    // ================= CEVAP KONTROLÜ =================
     function checkAnswer() {
       const val = parseInt(document.getElementById("wAnswer").value.trim());
       
       if (val === correctAnswer) {
-        // Başarılı
+        // DOĞRU CEVAP
         document.getElementById("verifyState").style.display = "none";
         document.getElementById("successState").style.display = "flex";
         
-        // SİTEYE (PARENT) BAŞARILI MESAJI GÖNDER
+        // ANA SİTEYE BAŞARILI MESAJI GÖNDER
         if (window.parent !== window) {
           window.parent.postMessage({ type: "CAPTCHA_SUCCESS", siteKey: siteKey }, "*");
+        } else {
+          // Eğer iframe içinde değil de tek başına açıldıysa
+          setTimeout(() => {
+             document.getElementById("captchaWidget").innerHTML = "<div style='color:#10b981; text-align:center; font-weight:bold;'>✅ Doğrulama Başarılı</div>";
+          }, 1000);
         }
+
       } else {
-        // Hatalı
+        // YANLIŞ CEVAP
         const input = document.getElementById("wAnswer");
         input.value = "";
         input.classList.add("shake");
