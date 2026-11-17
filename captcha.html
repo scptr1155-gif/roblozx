@@ -1,0 +1,195 @@
+<!DOCTYPE html>
+<html lang="tr">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Vestel CAPTCHA Doğrulama</title>
+<style>
+  /* Kutunun içindeki tasarım */
+  :root {
+    --bg: #1a1d2d;
+    --border: rgba(255,255,255,0.1);
+    --primary: #00539b;
+    --text-muted: #8b92a5;
+    --danger: #ef4444;
+    --success: #10b981;
+  }
+
+  body { 
+    margin: 0; padding: 0;
+    background: transparent; /* Arka planı şeffaf yapar, siteye tam oturur */
+    font-family: 'Segoe UI', sans-serif; 
+    display: flex; 
+    justify-content: center; 
+    align-items: center;
+    height: 100vh;
+  }
+
+  /* Mini CAPTCHA Kutusu */
+  .captcha-widget {
+    width: 320px;
+    background: var(--bg);
+    border: 1px solid var(--border);
+    border-radius: 8px;
+    padding: 15px;
+    box-shadow: 0 10px 25px rgba(0,0,0,0.5);
+    box-sizing: border-box;
+  }
+
+  /* 1. Yükleniyor Ekranı */
+  .loading-state { display: flex; align-items: center; gap: 10px; color: var(--text-muted); font-size: 14px; }
+  .spinner { width: 20px; height: 20px; border: 2px solid var(--border); border-top-color: var(--primary); border-radius: 50%; animation: spin 1s linear infinite; }
+  @keyframes spin { to { transform: rotate(360deg); } }
+
+  /* 2. Hata Ekranı (Key Geçersizse) */
+  .error-state { display: none; color: var(--danger); font-size: 14px; font-weight: 600; align-items: center; gap: 10px; }
+  
+  /* 3. Doğrulama Ekranı (Key Geçerliyse) */
+  .verify-state { display: none; flex-direction: column; gap: 10px; }
+  .verify-header { display: flex; align-items: center; gap: 10px; font-size: 13px; color: var(--text-muted); }
+  .verify-header img { height: 20px; }
+  .verify-question { font-size: 18px; font-weight: 800; text-align: center; color: #fff; background: rgba(0,0,0,0.2); padding: 8px; border-radius: 6px; letter-spacing: 1px; }
+  .verify-input-group { display: flex; gap: 8px; }
+  .verify-input-group input { flex: 1; padding: 8px 12px; background: rgba(0,0,0,0.2); border: 1px solid var(--border); border-radius: 6px; color: #fff; text-align: center; outline: none; }
+  .verify-btn { padding: 8px 15px; background: var(--primary); border: none; border-radius: 6px; color: #fff; font-weight: bold; cursor: pointer; }
+
+  /* 4. Başarı Ekranı */
+  .success-state { display: none; color: var(--success); font-size: 14px; font-weight: 600; align-items: center; gap: 10px; }
+
+  /* Animasyonlar */
+  @keyframes shake { 0%,100% { transform: translateX(0); } 25% { transform: translateX(-5px); } 75% { transform: translateX(5px); } }
+  .shake { animation: shake 0.3s ease; border-color: var(--danger) !important; }
+</style>
+</head>
+<body>
+
+  <div class="captcha-widget" id="captchaWidget">
+    
+    <div class="loading-state" id="loadingState">
+      <div class="spinner"></div>
+      <span>Güvenlik kontrolü...</span>
+    </div>
+
+    <div class="error-state" id="errorState">
+      <svg fill="none" stroke="currentColor" viewBox="0 0 24 24" width="20"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 8v4m0 4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z"></path></svg>
+      <span id="errorMsg">Hata: Geçersiz Key</span>
+    </div>
+
+    <div class="verify-state" id="verifyState">
+      <div class="verify-header">
+        <img src="https://upload.wikimedia.org/wikipedia/commons/thumb/c/c8/Vestel_logo.svg/512px-Vestel_logo.svg.png" alt="Vestel">
+        <span>Robot değilim</span>
+      </div>
+      <div class="verify-question" id="wQuestion">... + ... = ?</div>
+      <div class="verify-input-group">
+        <input type="text" id="wAnswer" placeholder="Cevap" autocomplete="off">
+        <button class="verify-btn" onclick="checkAnswer()">Onayla</button>
+      </div>
+    </div>
+
+    <div class="success-state" id="successState">
+      <svg fill="none" stroke="currentColor" viewBox="0 0 24 24" width="20"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 13l4 4L19 7"></path></svg>
+      <span>Doğrulandı</span>
+    </div>
+
+  </div>
+
+  <script>
+    // GitHub'daki JSON dosyanın linki (Bunu kendi repona göre ayarla)
+    const GITHUB_KEY_JSON_URL = "https://raw.githubusercontent.com/scptr1155-gif/roblozx/main/key.json";
+    
+    // Ana sitenden gelen parametreleri al (Site Key)
+    // Örnek: captcha.html?key=site_01s1b7mpae
+    const urlParams = new URLSearchParams(window.location.search);
+    const siteKey = urlParams.get('key'); 
+
+    let correctAnswer = 0;
+
+    document.addEventListener("DOMContentLoaded", async () => {
+      await validateKey();
+    });
+
+    // ANAHTAR DOĞRULAMA MANTIĞI
+    async function validateKey() {
+      if (!siteKey) {
+        return showError("Hata: Site Key eksik!");
+      }
+
+      try {
+        // GitHub'dan key.json dosyasını çek
+        const res = await fetch(GITHUB_KEY_JSON_URL + "?t=" + Date.now());
+        const data = await res.json();
+        
+        // Gelen key'i listede ara
+        const keyData = data.keys.find(k => k.siteKey === siteKey);
+
+        if (!keyData) {
+          return showError("Hata: Key sistemde bulunamadı!");
+        }
+
+        // Süre kontrolü
+        const expireDate = new Date(keyData.expires);
+        const today = new Date();
+        if (today > expireDate) {
+          return showError("Hata: Key süresi dolmuş!");
+        }
+
+        // Her şey normalse Soruyu aç
+        document.getElementById("loadingState").style.display = "none";
+        document.getElementById("verifyState").style.display = "flex";
+        generateQuestion();
+
+      } catch (e) {
+        showError("Bağlantı Hatası!");
+      }
+    }
+
+    function showError(msg) {
+      document.getElementById("loadingState").style.display = "none";
+      document.getElementById("errorState").style.display = "flex";
+      document.getElementById("errorMsg").textContent = msg;
+      
+      const widget = document.getElementById("captchaWidget");
+      widget.classList.add("shake");
+      
+      // Ana siteye hata mesajı gönder
+      if (window.parent !== window) {
+        window.parent.postMessage({ type: "CAPTCHA_ERROR", message: msg }, "*");
+      }
+    }
+
+    function generateQuestion() {
+      const n1 = Math.floor(Math.random() * 10) + 1;
+      const n2 = Math.floor(Math.random() * 10) + 1;
+      correctAnswer = n1 + n2;
+      document.getElementById("wQuestion").textContent = `${n1} + ${n2} = ?`;
+      document.getElementById("wAnswer").value = "";
+      
+      document.getElementById("wAnswer").addEventListener("keypress", (e) => {
+        if (e.key === "Enter") checkAnswer();
+      });
+    }
+
+    function checkAnswer() {
+      const val = parseInt(document.getElementById("wAnswer").value.trim());
+      
+      if (val === correctAnswer) {
+        // Başarılı
+        document.getElementById("verifyState").style.display = "none";
+        document.getElementById("successState").style.display = "flex";
+        
+        // SİTEYE (PARENT) BAŞARILI MESAJI GÖNDER
+        if (window.parent !== window) {
+          window.parent.postMessage({ type: "CAPTCHA_SUCCESS", siteKey: siteKey }, "*");
+        }
+      } else {
+        // Hatalı
+        const input = document.getElementById("wAnswer");
+        input.value = "";
+        input.classList.add("shake");
+        setTimeout(() => input.classList.remove("shake"), 300);
+      }
+    }
+  </script>
+</body>
+</html>
