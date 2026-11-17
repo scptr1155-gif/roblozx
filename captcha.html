@@ -3,8 +3,9 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>Vestel CAPTCHA - Gelişmiş</title>
+<title>Vestel CAPTCHA - Gelişmiş Güvenlik</title>
 <style>
+  /* ================= DEĞİŞKENLER ================= */
   :root {
     --bg: #1f212a; 
     --border: rgba(255, 255, 255, 0.08);
@@ -15,60 +16,207 @@
     --success: #10b981;
   }
 
-  * { margin: 0; padding: 0; box-sizing: border-box; font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif; }
+  /* ================= TEMEL SIFIRLAMA ================= */
+  * { 
+    margin: 0; 
+    padding: 0; 
+    box-sizing: border-box; 
+    font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif; 
+  }
 
+  /* ================= ARKA PLAN (Iframe için şeffaf) ================= */
   body { 
     background: transparent; 
-    display: flex; justify-content: center; align-items: center;
-    height: 100vh; overflow: hidden;
+    display: flex; 
+    justify-content: center; 
+    align-items: center;
+    height: 100vh;
+    overflow: hidden;
+    user-select: none; /* Metin seçimini engelle */
   }
 
+  /* ================= ANA WIDGET KUTUSU ================= */
   .captcha-widget {
-    width: 320px; background: var(--bg); border: 1px solid var(--border);
-    border-radius: 12px; padding: 16px; box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.3);
-    box-sizing: border-box; transition: border 0.3s;
+    width: 320px;
+    background: var(--bg);
+    border: 1px solid var(--border);
+    border-radius: 12px;
+    padding: 16px;
+    box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.3), 0 2px 4px -1px rgba(0, 0, 0, 0.2);
+    box-sizing: border-box;
+    transition: border 0.3s ease;
   }
 
-  .loading-state { display: flex; align-items: center; justify-content: center; gap: 12px; color: var(--text-muted); font-size: 14px; padding: 8px 0; }
-  .spinner { width: 16px; height: 16px; border: 2px solid var(--border); border-top-color: var(--primary); border-radius: 50%; animation: spin 0.8s linear infinite; }
-  @keyframes spin { to { transform: rotate(360deg); } }
+  /* ================= 1. YÜKLENİYOR DURUMU ================= */
+  .loading-state { 
+    display: flex; 
+    align-items: center; 
+    justify-content: center; 
+    gap: 12px; 
+    color: var(--text-muted); 
+    font-size: 14px; 
+    padding: 8px 0; 
+  }
+  
+  .spinner { 
+    width: 16px; 
+    height: 16px; 
+    border: 2px solid var(--border); 
+    border-top-color: var(--primary); 
+    border-radius: 50%; 
+    animation: spin 0.8s linear infinite; 
+  }
+  
+  @keyframes spin { 
+    to { transform: rotate(360deg); } 
+  }
 
-  .error-state { display: none; color: var(--danger); font-size: 13px; font-weight: 500; align-items: center; justify-content: center; gap: 8px; padding: 8px 0; text-align: center;}
+  /* ================= 2. HATA DURUMU ================= */
+  .error-state { 
+    display: none; 
+    color: var(--danger); 
+    font-size: 13px; 
+    font-weight: 500; 
+    align-items: center; 
+    justify-content: center; 
+    gap: 8px; 
+    padding: 8px 0; 
+    text-align: center;
+  }
   
-  .verify-state { display: none; flex-direction: column; }
-  .verify-header { display: flex; align-items: center; gap: 12px; margin-bottom: 12px; padding-bottom: 12px; border-bottom: 1px solid var(--border); }
-  .verify-header img { height: 18px; object-fit: contain; filter: brightness(0) invert(1); opacity: 0.9; }
-  .verify-header span { font-size: 13px; color: var(--text-main); font-weight: 500; }
-  
-  .verify-question { font-size: 20px; font-weight: 700; text-align: center; color: var(--text-main); background: rgba(0, 0, 0, 0.2); padding: 12px; border-radius: 8px; letter-spacing: 1px; margin-bottom: 12px; }
-  
-  .verify-input-group { display: flex; flex-direction: column; gap: 8px; }
-  .verify-input-group input { width: 100%; padding: 10px 12px; background: rgba(0, 0, 0, 0.2); border: 1px solid var(--border); border-radius: 6px; color: var(--text-main); text-align: center; outline: none; font-size: 14px; transition: border 0.2s; }
-  .verify-input-group input:focus { border-color: var(--primary); }
-  
-  .verify-btn { width: 100%; padding: 10px; background: var(--primary); border: none; border-radius: 6px; color: #fff; font-weight: 600; font-size: 14px; cursor: pointer; transition: background 0.2s; }
-  .verify-btn:hover { background: #1d4ed8; }
+  .error-state svg {
+    flex-shrink: 0;
+  }
 
-  .success-state { display: none; color: var(--success); font-size: 14px; font-weight: 500; align-items: center; justify-content: center; gap: 8px; padding: 8px 0; }
+  /* ================= 3. DOĞRULAMA DURUMU ================= */
+  .verify-state { 
+    display: none; 
+    flex-direction: column; 
+  }
+  
+  /* Üst Kısım (Logo ve Başlık) */
+  .verify-header { 
+    display: flex; 
+    align-items: center; 
+    gap: 12px; 
+    margin-bottom: 12px; 
+    padding-bottom: 12px; 
+    border-bottom: 1px solid var(--border); 
+  }
+  
+  /* Logoyu koyu temaya uygun beyaz yapıyoruz */
+  .verify-header img { 
+    height: 18px; 
+    object-fit: contain; 
+    filter: brightness(0) invert(1); 
+    opacity: 0.9; 
+  }
+  
+  .verify-header span { 
+    font-size: 13px; 
+    color: var(--text-main); 
+    font-weight: 500; 
+  }
+  
+  /* Soru Alanı */
+  .verify-question { 
+    font-size: 20px; 
+    font-weight: 700; 
+    text-align: center; 
+    color: var(--text-main); 
+    background: rgba(0, 0, 0, 0.2); 
+    padding: 12px; 
+    border-radius: 8px; 
+    letter-spacing: 1px; 
+    margin-bottom: 12px; 
+  }
+  
+  /* Giriş ve Buton */
+  .verify-input-group { 
+    display: flex; 
+    flex-direction: column; 
+    gap: 8px; 
+  }
+  
+  .verify-input-group input { 
+    width: 100%; 
+    padding: 10px 12px; 
+    background: rgba(0, 0, 0, 0.2); 
+    border: 1px solid var(--border); 
+    border-radius: 6px; 
+    color: var(--text-main); 
+    text-align: center; 
+    outline: none; 
+    font-size: 14px; 
+    transition: border 0.2s; 
+  }
+  
+  .verify-input-group input:focus { 
+    border-color: var(--primary); 
+  }
+  
+  .verify-btn { 
+    width: 100%; 
+    padding: 10px; 
+    background: var(--primary); 
+    border: none; 
+    border-radius: 6px; 
+    color: #fff; 
+    font-weight: 600; 
+    font-size: 14px; 
+    cursor: pointer; 
+    transition: background 0.2s; 
+  }
+  
+  .verify-btn:hover { 
+    background: #1d4ed8; 
+  }
 
-  @keyframes shake { 0%,100% { transform: translateX(0); } 25% { transform: translateX(-4px); } 75% { transform: translateX(4px); } }
-  .shake { animation: shake 0.3s ease; border-color: var(--danger) !important; }
+  /* ================= 4. BAŞARILI DURUMU ================= */
+  .success-state { 
+    display: none; 
+    color: var(--success); 
+    font-size: 14px; 
+    font-weight: 500; 
+    align-items: center; 
+    justify-content: center; 
+    gap: 8px; 
+    padding: 8px 0; 
+  }
+
+  /* ================= ANİMASYONLAR ================= */
+  @keyframes shake { 
+    0%, 100% { transform: translateX(0); } 
+    25% { transform: translateX(-4px); } 
+    75% { transform: translateX(4px); } 
+  }
+  
+  .shake { 
+    animation: shake 0.3s ease; 
+    border-color: var(--danger) !important; 
+  }
 </style>
 </head>
 <body>
 
+  <!-- ================= WIDGET BAŞLANGICI ================= -->
   <div class="captcha-widget" id="captchaWidget">
     
+    <!-- 1. YÜKLENİYOR -->
     <div class="loading-state" id="loadingState">
       <div class="spinner"></div>
       <span>Güvenlik kontrolü...</span>
     </div>
 
+    <!-- 2. HATA -->
     <div class="error-state" id="errorState">
-      <svg fill="none" stroke="currentColor" viewBox="0 0 24 24" width="16" height="16"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 8v4m0 4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z"></path></svg>
+      <svg fill="none" stroke="currentColor" viewBox="0 0 24 24" width="16" height="16">
+        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 8v4m0 4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z"></path>
+      </svg>
       <span id="errorMsg">Hata</span>
     </div>
 
+    <!-- 3. DOĞRULAMA -->
     <div class="verify-state" id="verifyState">
       <div class="verify-header">
         <img src="https://upload.wikimedia.org/wikipedia/commons/thumb/c/c8/Vestel_logo.svg/512px-Vestel_logo.svg.png" alt="Vestel" onerror="this.style.display='none'">
@@ -79,40 +227,66 @@
       
       <div class="verify-input-group">
         <input type="text" id="wAnswer" placeholder="Cevabı buraya yazın" autocomplete="off">
-        <button class="verify-btn" id="verifyBtn" onclick="checkAnswer()">Onayla</button>
+        <button class="verify-btn" onclick="checkAnswer()">Onayla</button>
       </div>
     </div>
 
+    <!-- 4. BAŞARILI -->
     <div class="success-state" id="successState">
-      <svg fill="none" stroke="currentColor" viewBox="0 0 24 24" width="16" height="16"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 13l4 4L19 7"></path></svg>
-      <span>Doğrulandı</span>
+      <svg fill="none" stroke="currentColor" viewBox="0 0 24 24" width="16" height="16">
+        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 13l4 4L19 7"></path>
+      </svg>
+      <span>Doğrulandı, Yönlendiriliyor...</span>
     </div>
 
   </div>
+  <!-- ================= WIDGET BİTİŞİ ================= -->
 
+  <!-- ================= JAVASCRIPT MANTIĞI ================= -->
   <script>
+    // =========================================================
+    // 1. AYARLAR VE DEĞİŞKENLER
+    // =========================================================
+    // GitHub Pages'teki keys.json dosyasının yolu
     const GITHUB_KEY_JSON_URL = "https://scptr1155-gif.github.io/robloxz/keys.json";
+    
+    // URL Parametrelerinden gelen Site Key'i al
     const urlParams = new URLSearchParams(window.location.search);
     const siteKey = urlParams.get('key'); 
-    
+
+    // Oyun Değişkenleri
     let correctAnswer = 0;
     
-    // ================= FARE HAREKETİ İZLEME (BOT TESPİTİ) =================
+    // Bot Tespiti İçin Fare Değişkenleri
     let mouseMovements = [];
     let isHumanMovement = false;
 
-    // Farenin her hareketini kaydet
-    window.addEventListener('mousemove', (e) => {
-      mouseMovements.push({ x: e.clientX, y: e.clientY, t: Date.now() });
+    // =========================================================
+    // 2. BAŞLATICI (Sayfa yüklendiğinde çalışır)
+    // =========================================================
+    document.addEventListener("DOMContentLoaded", async () => {
+      // Fare dinleyicisini başlat
+      initMouseTracker();
       
-      // Analiz için son 20 hareketi tut
-      if (mouseMovements.length > 20) {
-        mouseMovements.shift();
-        analyzeMouseBehavior();
-      }
+      // Anahtarı doğrula
+      await validateKey();
     });
 
-    // Hareketi analiz et
+    // =========================================================
+    // 3. FARE HAREKETİ TAKİBİ (Bot Koruması)
+    // =========================================================
+    function initMouseTracker() {
+      window.addEventListener('mousemove', (e) => {
+        mouseMovements.push({ x: e.clientX, y: e.clientY, t: Date.now() });
+        
+        // Analiz için son 20 hareketi tut
+        if (mouseMovements.length > 20) {
+          mouseMovements.shift();
+          analyzeMouseBehavior();
+        }
+      });
+    }
+
     function analyzeMouseBehavior() {
       if (mouseMovements.length < 5 || isHumanMovement) return;
 
@@ -123,12 +297,10 @@
         let p1 = mouseMovements[i - 1];
         let p2 = mouseMovements[i];
         
-        // Açı hesaplaması (Hareket düz bir çizgide mi ilerliyor?)
         let dx = p2.x - p1.x;
         let dy = p2.y - p1.y;
         let angle = Math.atan2(dy, dx);
 
-        // Eğer açılar çok keskin değilse (kusursuz düz çizgi), şüpheli
         if (i > 1) {
           let p0 = mouseMovements[i - 2];
           let dx0 = p1.x - p0.x;
@@ -137,7 +309,6 @@
           
           let angleDiff = Math.abs(angle - prevAngle);
           
-          // İnsanlar fareyi hareket ettirirken açıyı sürekli değiştirir (mikro titremeler)
           // Eğer açı değişimi çok azsa (0.05'ten küçükse), bu bir bottur.
           if (angleDiff < 0.05) {
             straightLineCount++;
@@ -145,91 +316,121 @@
         }
       }
 
-      // Eğer hareketlerin %80'inden fazlası düz çizgi ise insan değildir
+      // Eğer hareketlerin %80'inden fazlası düz çizgi ise bot tespiti yap
       if (straightLineCount > (totalMovements * 0.8)) {
         console.warn("Bot tespit edildi: Aşırı düz çizgi hareketi.");
-        showBotError();
+        showError("İşlem reddedildi: Şüpheli hareket!");
       } else {
-        isHumanMovement = true; // İnsan hareketi onaylandı
+        isHumanMovement = true;
         document.getElementById("verifyHeaderText").textContent = "Robot değilim ✓";
       }
     }
 
-    function showBotError() {
-      document.getElementById("loadingState").style.display = "none";
-      document.getElementById("verifyState").style.display = "none";
-      document.getElementById("errorState").style.display = "flex";
-      document.getElementById("errorMsg").textContent = "İşlem reddedildi: Şüpheli hareket tespit edildi!";
-      document.getElementById("captchaWidget").classList.add("shake");
-      
-      if (window.parent !== window) window.parent.postMessage({ type: "CAPTCHA_ERROR", message: "Bot tespit edildi!" }, "*");
-    }
-    // =====================================================================
-
-    document.addEventListener("DOMContentLoaded", async () => {
-      await validateKey();
-    });
-
+    // =========================================================
+    // 4. ANAHTAR DOĞRULAMA (GitHub'dan Çekme)
+    // =========================================================
     async function validateKey() {
       if (!siteKey) return showError("Key eksik!");
 
       try {
-        const res = await fetch(GITHUB_KEY_JSON_URL + "?nocache=" + Math.random());
+        // Cache (Önbellek) engellemek için rastgele zaman damgası ekle
+        const urlWithNoCache = GITHUB_KEY_JSON_URL + "?nocache=" + Math.random();
+        
+        const res = await fetch(urlWithNoCache);
+        if (!res.ok) throw new Error("Bağlantı Hatası");
+        
         const data = await res.json();
+        
+        // Gelen key'i listede ara
         const keyData = data.keys.find(k => k.siteKey === siteKey);
 
-        if (!keyData) return showError("Geçersiz Key!");
+        if (!keyData) {
+          return showError("Geçersiz Site Key!");
+        }
 
+        // Süre kontrolü
         const expireDate = new Date(keyData.expires);
         const today = new Date();
         today.setHours(0, 0, 0, 0);
         expireDate.setHours(0, 0, 0, 0);
 
-        if (today > expireDate) return showError("Süresi dolmuş!");
+        if (today > expireDate) {
+          return showError("Anahtar süresi dolmuş!");
+        }
 
+        // Her şey normalse Soruyu Aç
         document.getElementById("loadingState").style.display = "none";
         document.getElementById("verifyState").style.display = "flex";
         generateQuestion();
 
       } catch (e) {
-        showError("Bağlantı Hatası!");
+        console.error(e);
+        showError("Sunucuya ulaşılamadı!");
       }
     }
 
+    // =========================================================
+    // 5. HATA GÖSTERİMİ
+    // =========================================================
     function showError(msg) {
       document.getElementById("loadingState").style.display = "none";
+      document.getElementById("verifyState").style.display = "none";
       document.getElementById("errorState").style.display = "flex";
       document.getElementById("errorMsg").textContent = msg;
-      document.getElementById("captchaWidget").classList.add("shake");
-      if (window.parent !== window) window.parent.postMessage({ type: "CAPTCHA_ERROR", message: msg }, "*");
+      
+      const widget = document.getElementById("captchaWidget");
+      widget.classList.add("shake");
+      
+      // Ana siteye (Parent) hata mesajı yolla
+      if (window.parent !== window) {
+        window.parent.postMessage({ type: "CAPTCHA_ERROR", message: msg }, "*");
+      }
     }
 
+    // =========================================================
+    // 6. SORU ÜRETME
+    // =========================================================
     function generateQuestion() {
       const n1 = Math.floor(Math.random() * 10) + 1;
       const n2 = Math.floor(Math.random() * 10) + 1;
       correctAnswer = n1 + n2;
+      
       document.getElementById("wQuestion").textContent = `${n1} + ${n2} = ?`;
       document.getElementById("wAnswer").value = "";
-      document.getElementById("wAnswer").addEventListener("keypress", (e) => { if (e.key === "Enter") checkAnswer(); });
+      
+      // Enter tuşu desteği
+      document.getElementById("wAnswer").addEventListener("keypress", (e) => { 
+        if (e.key === "Enter") checkAnswer(); 
+      });
+      
+      // Otomatik odaklanma
       setTimeout(() => document.getElementById("wAnswer").focus(), 100);
     }
 
+    // =========================================================
+    // 7. CEVAP KONTROLÜ
+    // =========================================================
     function checkAnswer() {
       const val = parseInt(document.getElementById("wAnswer").value.trim());
       
       // Ekstra Güvenlik: Bot tespit edildiyse cevap verseler bile geçme!
       if (!isHumanMovement && mouseMovements.length > 5) {
-        return showBotError();
+        return showError("Bot hareketi tespit edildi!");
       }
 
       if (val === correctAnswer) {
+        // DOĞRU CEVAP
         document.getElementById("verifyState").style.display = "none";
         document.getElementById("successState").style.display = "flex";
         
+        // Ana siteye (Parent) başarılı mesajı yolla
         if (window.parent !== window) {
-          setTimeout(() => { window.parent.postMessage({ type: "CAPTCHA_SUCCESS", siteKey: siteKey }, "*"); }, 600);
+          setTimeout(() => { 
+            window.parent.postMessage({ type: "CAPTCHA_SUCCESS", siteKey: siteKey }, "*"); 
+          }, 800);
         }
       } else {
+        // YANLIŞ CEVAP
         const input = document.getElementById("wAnswer");
         input.value = "";
         input.classList.add("shake");
