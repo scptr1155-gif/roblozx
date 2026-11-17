@@ -1,8 +1,16 @@
-{
-  "id": "game1",
-  "name": "İlk Oyunum",
-  "description": "Bu bir test oyunudur.",
-  "thumbnail": "https://via.placeholder.com/300x200",
-  "gameUrl": "https://senin-oyun-linkin.com/game1",
-  "version": "1.0.0"
-}
+<canvas id="c" width="800" height="600"></canvas>
+<script>
+  const ctx = document.getElementById('c').getContext('2d');
+  let x = 400, y = 300;
+  document.addEventListener('keydown', e => {
+    if (e.key === 'ArrowRight') x += 20;
+    if (e.key === 'ArrowLeft')  x -= 20;
+  });
+  function loop() {
+    ctx.fillStyle = '#111'; ctx.fillRect(0,0,800,600);
+    ctx.fillStyle = '#7c3aed'; ctx.beginPath();
+    ctx.arc(x, y, 25, 0, Math.PI*2); ctx.fill();
+    requestAnimationFrame(loop);
+  }
+  loop();
+</script>
