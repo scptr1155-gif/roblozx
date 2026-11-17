@@ -3,12 +3,12 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>Vestel CAPTCHA</title>
+<title>Vestel CAPTCHA - Gelişmiş</title>
 <style>
   :root {
-    --bg: #1f212a; /* Daha şık bir koyu gri/lacivert */
+    --bg: #1f212a; 
     --border: rgba(255, 255, 255, 0.08);
-    --primary: #2563eb; /* Modern bir mavi */
+    --primary: #2563eb; 
     --text-main: #f3f4f6;
     --text-muted: #9ca3af;
     --danger: #ef4444;
@@ -17,76 +17,38 @@
 
   * { margin: 0; padding: 0; box-sizing: border-box; font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif; }
 
-  /* Arka planı şeffaf yapıyoruz */
   body { 
     background: transparent; 
-    display: flex; 
-    justify-content: center; 
-    align-items: center;
-    height: 100vh;
-    overflow: hidden;
+    display: flex; justify-content: center; align-items: center;
+    height: 100vh; overflow: hidden;
   }
 
-  /* Kutu Tasarımı */
   .captcha-widget {
-    width: 320px;
-    background: var(--bg);
-    border: 1px solid var(--border);
-    border-radius: 12px; /* Daha yumuşak köşeler */
-    padding: 16px;
-    box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.3), 0 2px 4px -1px rgba(0, 0, 0, 0.2);
-    box-sizing: border-box;
+    width: 320px; background: var(--bg); border: 1px solid var(--border);
+    border-radius: 12px; padding: 16px; box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.3);
+    box-sizing: border-box; transition: border 0.3s;
   }
 
-  /* 1. Yükleniyor */
   .loading-state { display: flex; align-items: center; justify-content: center; gap: 12px; color: var(--text-muted); font-size: 14px; padding: 8px 0; }
   .spinner { width: 16px; height: 16px; border: 2px solid var(--border); border-top-color: var(--primary); border-radius: 50%; animation: spin 0.8s linear infinite; }
   @keyframes spin { to { transform: rotate(360deg); } }
 
-  /* 2. Hata */
-  .error-state { display: none; color: var(--danger); font-size: 13px; font-weight: 500; align-items: center; justify-content: center; gap: 8px; padding: 8px 0; }
+  .error-state { display: none; color: var(--danger); font-size: 13px; font-weight: 500; align-items: center; justify-content: center; gap: 8px; padding: 8px 0; text-align: center;}
   
-  /* 3. Doğrulama Ekranı */
   .verify-state { display: none; flex-direction: column; }
-  
-  /* Üst Kısım (Logo ve Yazı) */
-  .verify-header { 
-    display: flex; align-items: center; gap: 12px; 
-    margin-bottom: 12px; padding-bottom: 12px; 
-    border-bottom: 1px solid var(--border);
-  }
-  /* Beyaz kutu arka planını kaldırıp logoyu şeffaf hale getirdik */
-  .verify-header img { 
-    height: 18px; 
-    object-fit: contain; 
-    filter: brightness(0) invert(1); /* Logoyu beyaz yapar, koyu temada şık durur */
-    opacity: 0.9;
-  }
+  .verify-header { display: flex; align-items: center; gap: 12px; margin-bottom: 12px; padding-bottom: 12px; border-bottom: 1px solid var(--border); }
+  .verify-header img { height: 18px; object-fit: contain; filter: brightness(0) invert(1); opacity: 0.9; }
   .verify-header span { font-size: 13px; color: var(--text-main); font-weight: 500; }
   
-  /* Soru Alanı */
-  .verify-question { 
-    font-size: 20px; font-weight: 700; text-align: center; color: var(--text-main); 
-    background: rgba(0, 0, 0, 0.2); padding: 12px; border-radius: 8px; 
-    letter-spacing: 1px; margin-bottom: 12px;
-  }
+  .verify-question { font-size: 20px; font-weight: 700; text-align: center; color: var(--text-main); background: rgba(0, 0, 0, 0.2); padding: 12px; border-radius: 8px; letter-spacing: 1px; margin-bottom: 12px; }
   
-  /* Giriş ve Buton */
   .verify-input-group { display: flex; flex-direction: column; gap: 8px; }
-  .verify-input-group input { 
-    width: 100%; padding: 10px 12px; background: rgba(0, 0, 0, 0.2); 
-    border: 1px solid var(--border); border-radius: 6px; color: var(--text-main); 
-    text-align: center; outline: none; font-size: 14px; transition: border 0.2s;
-  }
+  .verify-input-group input { width: 100%; padding: 10px 12px; background: rgba(0, 0, 0, 0.2); border: 1px solid var(--border); border-radius: 6px; color: var(--text-main); text-align: center; outline: none; font-size: 14px; transition: border 0.2s; }
   .verify-input-group input:focus { border-color: var(--primary); }
   
-  .verify-btn { 
-    width: 100%; padding: 10px; background: var(--primary); border: none; border-radius: 6px; 
-    color: #fff; font-weight: 600; font-size: 14px; cursor: pointer; transition: background 0.2s;
-  }
+  .verify-btn { width: 100%; padding: 10px; background: var(--primary); border: none; border-radius: 6px; color: #fff; font-weight: 600; font-size: 14px; cursor: pointer; transition: background 0.2s; }
   .verify-btn:hover { background: #1d4ed8; }
 
-  /* 4. Başarılı */
   .success-state { display: none; color: var(--success); font-size: 14px; font-weight: 500; align-items: center; justify-content: center; gap: 8px; padding: 8px 0; }
 
   @keyframes shake { 0%,100% { transform: translateX(0); } 25% { transform: translateX(-4px); } 75% { transform: translateX(4px); } }
@@ -109,16 +71,15 @@
 
     <div class="verify-state" id="verifyState">
       <div class="verify-header">
-        <!-- Vestel Logosu -->
         <img src="https://upload.wikimedia.org/wikipedia/commons/thumb/c/c8/Vestel_logo.svg/512px-Vestel_logo.svg.png" alt="Vestel" onerror="this.style.display='none'">
-        <span>Robot değilim</span>
+        <span id="verifyHeaderText">Robot değilim</span>
       </div>
       
       <div class="verify-question" id="wQuestion">... + ... = ?</div>
       
       <div class="verify-input-group">
         <input type="text" id="wAnswer" placeholder="Cevabı buraya yazın" autocomplete="off">
-        <button class="verify-btn" onclick="checkAnswer()">Onayla</button>
+        <button class="verify-btn" id="verifyBtn" onclick="checkAnswer()">Onayla</button>
       </div>
     </div>
 
@@ -130,13 +91,80 @@
   </div>
 
   <script>
-    // GitHub'daki keys.json dosyasının linki
-    const GITHUB_KEY_JSON_URL = "https://scptr1155-gif.github.io/roblozx/keys.json";
-    
-    // URL'den gelen siteKey'i al
+    const GITHUB_KEY_JSON_URL = "https://scptr1155-gif.github.io/robloxz/keys.json";
     const urlParams = new URLSearchParams(window.location.search);
     const siteKey = urlParams.get('key'); 
+    
     let correctAnswer = 0;
+    
+    // ================= FARE HAREKETİ İZLEME (BOT TESPİTİ) =================
+    let mouseMovements = [];
+    let isHumanMovement = false;
+
+    // Farenin her hareketini kaydet
+    window.addEventListener('mousemove', (e) => {
+      mouseMovements.push({ x: e.clientX, y: e.clientY, t: Date.now() });
+      
+      // Analiz için son 20 hareketi tut
+      if (mouseMovements.length > 20) {
+        mouseMovements.shift();
+        analyzeMouseBehavior();
+      }
+    });
+
+    // Hareketi analiz et
+    function analyzeMouseBehavior() {
+      if (mouseMovements.length < 5 || isHumanMovement) return;
+
+      let straightLineCount = 0;
+      let totalMovements = mouseMovements.length - 1;
+
+      for (let i = 1; i < mouseMovements.length; i++) {
+        let p1 = mouseMovements[i - 1];
+        let p2 = mouseMovements[i];
+        
+        // Açı hesaplaması (Hareket düz bir çizgide mi ilerliyor?)
+        let dx = p2.x - p1.x;
+        let dy = p2.y - p1.y;
+        let angle = Math.atan2(dy, dx);
+
+        // Eğer açılar çok keskin değilse (kusursuz düz çizgi), şüpheli
+        if (i > 1) {
+          let p0 = mouseMovements[i - 2];
+          let dx0 = p1.x - p0.x;
+          let dy0 = p1.y - p0.y;
+          let prevAngle = Math.atan2(dy0, dx0);
+          
+          let angleDiff = Math.abs(angle - prevAngle);
+          
+          // İnsanlar fareyi hareket ettirirken açıyı sürekli değiştirir (mikro titremeler)
+          // Eğer açı değişimi çok azsa (0.05'ten küçükse), bu bir bottur.
+          if (angleDiff < 0.05) {
+            straightLineCount++;
+          }
+        }
+      }
+
+      // Eğer hareketlerin %80'inden fazlası düz çizgi ise insan değildir
+      if (straightLineCount > (totalMovements * 0.8)) {
+        console.warn("Bot tespit edildi: Aşırı düz çizgi hareketi.");
+        showBotError();
+      } else {
+        isHumanMovement = true; // İnsan hareketi onaylandı
+        document.getElementById("verifyHeaderText").textContent = "Robot değilim ✓";
+      }
+    }
+
+    function showBotError() {
+      document.getElementById("loadingState").style.display = "none";
+      document.getElementById("verifyState").style.display = "none";
+      document.getElementById("errorState").style.display = "flex";
+      document.getElementById("errorMsg").textContent = "İşlem reddedildi: Şüpheli hareket tespit edildi!";
+      document.getElementById("captchaWidget").classList.add("shake");
+      
+      if (window.parent !== window) window.parent.postMessage({ type: "CAPTCHA_ERROR", message: "Bot tespit edildi!" }, "*");
+    }
+    // =====================================================================
 
     document.addEventListener("DOMContentLoaded", async () => {
       await validateKey();
@@ -148,7 +176,6 @@
       try {
         const res = await fetch(GITHUB_KEY_JSON_URL + "?nocache=" + Math.random());
         const data = await res.json();
-        
         const keyData = data.keys.find(k => k.siteKey === siteKey);
 
         if (!keyData) return showError("Geçersiz Key!");
@@ -190,6 +217,11 @@
     function checkAnswer() {
       const val = parseInt(document.getElementById("wAnswer").value.trim());
       
+      // Ekstra Güvenlik: Bot tespit edildiyse cevap verseler bile geçme!
+      if (!isHumanMovement && mouseMovements.length > 5) {
+        return showBotError();
+      }
+
       if (val === correctAnswer) {
         document.getElementById("verifyState").style.display = "none";
         document.getElementById("successState").style.display = "flex";
