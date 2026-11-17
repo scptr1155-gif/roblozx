@@ -1,1 +1,86 @@
+<!DOCTYPE html>
+<html lang="tr">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Sistem Hatası - Vestel CAPTCHA</title>
+<style>
+  * { margin: 0; padding: 0; box-sizing: border-box; font-family: 'Segoe UI', sans-serif; }
+  body { 
+    background: transparent; 
+    display: flex; justify-content: center; align-items: center;
+    height: 100vh; overflow: hidden;
+  }
 
+  .error-widget {
+    width: 320px;
+    background: #1f212a;
+    border: 1px solid rgba(239, 68, 68, 0.4); /* Kırmızımsı kenarlık */
+    border-radius: 12px;
+    padding: 25px 20px;
+    box-shadow: 0 10px 25px rgba(0,0,0,0.5);
+    text-align: center;
+    animation: shake 0.5s ease;
+  }
+
+  .error-icon {
+    display: inline-flex;
+    justify-content: center;
+    align-items: center;
+    width: 50px; height: 50px;
+    background: rgba(239, 68, 68, 0.1);
+    border-radius: 50%;
+    margin-bottom: 15px;
+  }
+
+  .error-icon svg { color: #ef4444; }
+
+  h2 {
+    font-size: 18px;
+    color: #f3f4f6;
+    margin-bottom: 8px;
+  }
+
+  p {
+    font-size: 13px;
+    color: #9ca3af;
+    line-height: 1.5;
+    margin-bottom: 20px;
+  }
+
+  .btn {
+    padding: 10px 20px;
+    background: #ef4444;
+    border: none;
+    border-radius: 6px;
+    color: #fff;
+    font-weight: 600;
+    font-size: 14px;
+    cursor: pointer;
+    transition: 0.2s;
+    width: 100%;
+  }
+  .btn:hover { background: #dc2626; }
+
+  @keyframes shake {
+    0%, 100% { transform: translateX(0); }
+    25% { transform: translateX(-5px); }
+    75% { transform: translateX(5px); }
+  }
+</style>
+</head>
+<body>
+
+  <div class="error-widget">
+    <div class="error-icon">
+      <svg fill="none" stroke="currentColor" viewBox="0 0 24 24" width="28" height="28">
+        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 9v2m0 4h.01m-6.938 4h13.856c1.54 0 2.502-1.667 1.732-3L13.732 4c-.77-1.333-2.694-1.333-3.464 0L3.34 16c-.77 1.333.192 3 1.732 3z"></path>
+      </svg>
+    </div>
+    <h2>Sistem Hatası!</h2>
+    <p>CAPTCHA doğrulama servisi şu an yanıt vermiyor veya dosya boş. Lütfen sayfayı yenileyerek tekrar deneyin.</p>
+    <button class="btn" onclick="window.parent.location.reload()">🔄 Yeniden Dene</button>
+  </div>
+
+</body>
+</html>
