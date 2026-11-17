@@ -1,3 +1,10 @@
 {
-  "keys": []
+  "keys": [
+    {
+      "siteName": "file:///C:/Users/pc/Downloads/deepseek_html_20261117_1eb721.html",
+      "siteKey": "site_k0564f0woy",
+      "secretKey": "sec_pg9t3rztip",
+      "expires": "2026-11-18"
+    }
+  ]
 }
