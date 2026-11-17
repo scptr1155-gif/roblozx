@@ -31,10 +31,7 @@
 <body>
 
   <div class="captcha-widget" id="captchaWidget">
-    <div class="loading-state" id="loadingState">
-      <div class="spinner"></div>
-      <span>Güvenlik kontrolü...</span>
-    </div>
+    <div class="loading-state" id="loadingState"><div class="spinner"></div><span>Güvenlik kontrolü...</span></div>
     <div class="error-state" id="errorState">
       <svg fill="none" stroke="currentColor" viewBox="0 0 24 24" width="16" height="16"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 8v4m0 4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z"></path></svg>
       <span id="errorMsg">Hata</span>
@@ -42,7 +39,7 @@
     <div class="verify-state" id="verifyState">
       <div class="verify-header">
         <img src="https://upload.wikimedia.org/wikipedia/commons/thumb/c/c8/Vestel_logo.svg/512px-Vestel_logo.svg.png" alt="Vestel" onerror="this.style.display='none'">
-        <span id="verifyHeaderText">Robot değilim</span>
+        <span>Robot değilim</span>
       </div>
       <div class="verify-question" id="wQuestion">... + ... = ?</div>
       <div class="verify-input-group">
@@ -58,14 +55,17 @@
 
   <script>
     // =========================================================
-    // EN ÖNEMLİ KOD: ANA SİTEYE "BEN YÜKLENDİM" SİNYALİ GÖNDER
-    // Bu kod sayesinde ana site zaman aşımına düşüp hata vermez.
+    // 1. ANA SİTEYE "BEN YÜKLENDİM" SİNYALİ GÖNDER (Çok Önemli!)
     // =========================================================
     if (window.parent !== window) {
       window.parent.postMessage({ type: "CAPTCHA_LOADED" }, "*");
     }
 
+    // =========================================================
+    // 2. GITHUB PAGES'TEKİ KEYS.JSON YOLU
+    // =========================================================
     const GITHUB_KEY_JSON_URL = "https://scptr1155-gif.github.io/robloxz/keys.json";
+    
     const urlParams = new URLSearchParams(window.location.search);
     const siteKey = urlParams.get('key'); 
     let correctAnswer = 0;
@@ -77,12 +77,15 @@
     async function validateKey() {
       if (!siteKey) return showError("Key eksik!");
       try {
+        // Önbelleği kır ve anahtarları çek
         const res = await fetch(GITHUB_KEY_JSON_URL + "?nocache=" + Math.random());
         if (!res.ok) throw new Error();
         const data = await res.json();
+        
         const keyData = data.keys.find(k => k.siteKey === siteKey);
         if (!keyData) return showError("Geçersiz Key!");
         
+        // Süre Kontrolü
         const expireDate = new Date(keyData.expires);
         const today = new Date();
         today.setHours(0, 0, 0, 0);
@@ -93,7 +96,7 @@
         document.getElementById("verifyState").style.display = "flex";
         generateQuestion();
       } catch (e) {
-        showError("Bağlantı Hatası!");
+        showError("Bağlantı Hatası! (keys.json okunamadı)");
       }
     }
 
@@ -103,7 +106,6 @@
       document.getElementById("errorState").style.display = "flex";
       document.getElementById("errorMsg").textContent = msg;
       document.getElementById("captchaWidget").classList.add("shake");
-      if (window.parent !== window) window.parent.postMessage({ type: "CAPTCHA_ERROR", message: msg }, "*");
     }
 
     function generateQuestion() {
