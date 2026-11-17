@@ -54,17 +54,15 @@
   </div>
 
   <script>
-    // =========================================================
-    // 1. ANA SİTEYE "BEN YÜKLENDİM" SİNYALİ GÖNDER (Çok Önemli!)
-    // =========================================================
+    // Ana siteye yüklendi sinyali gönder
     if (window.parent !== window) {
       window.parent.postMessage({ type: "CAPTCHA_LOADED" }, "*");
     }
 
     // =========================================================
-    // 2. GITHUB PAGES'TEKİ KEYS.JSON YOLU
+    // ÇOK ÖNEMLİ DÜZELTME: RAW GITHUB LİNKİ KULLANIYORUZ
     // =========================================================
-    const GITHUB_KEY_JSON_URL = "https://scptr1155-gif.github.io/robloxz/keys.json";
+    const GITHUB_KEY_JSON_URL = "https://raw.githubusercontent.com/scptr1155-gif/roblozx/main/keys.json";
     
     const urlParams = new URLSearchParams(window.location.search);
     const siteKey = urlParams.get('key'); 
@@ -76,16 +74,20 @@
 
     async function validateKey() {
       if (!siteKey) return showError("Key eksik!");
+      
       try {
-        // Önbelleği kır ve anahtarları çek
+        // Cache engellemek için rastgele parametre ekliyoruz
         const res = await fetch(GITHUB_KEY_JSON_URL + "?nocache=" + Math.random());
-        if (!res.ok) throw new Error();
+        
+        if (!res.ok) {
+            throw new Error("Dosya bulunamadı (HTTP " + res.status + ")");
+        }
+
         const data = await res.json();
         
         const keyData = data.keys.find(k => k.siteKey === siteKey);
         if (!keyData) return showError("Geçersiz Key!");
         
-        // Süre Kontrolü
         const expireDate = new Date(keyData.expires);
         const today = new Date();
         today.setHours(0, 0, 0, 0);
@@ -96,7 +98,8 @@
         document.getElementById("verifyState").style.display = "flex";
         generateQuestion();
       } catch (e) {
-        showError("Bağlantı Hatası! (keys.json okunamadı)");
+        // Hatanın ne olduğunu ekrana yazdır
+        showError("Sunucuya ulaşılamadı: " + e.message);
       }
     }
 
