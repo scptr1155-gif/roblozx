@@ -1,7 +1,16 @@
 {
-  "siteName": "Vestel Güvenlik",
+  "siteName": "ROBLOZX",
   "logoUrl": "https://upload.wikimedia.org/wikipedia/commons/thumb/c/c8/Vestel_logo.svg/512px-Vestel_logo.svg.png",
   "themeColor": "#00539b",
-  "apiUrl": "https://SENIN-CAPTCHA-SITENIN-LINKI.com",
-  "successMessage": "Robot olmadığınız onaylandı. Yönlendiriliyorsunuz..."
+  "validKeys": [
+    {
+      "siteKey": "site_12345deneme",
+      "secretKey": "sec_67890deneme"
+    },
+    {
+      "siteKey": "site_abcde",
+      "secretKey": "sec_fghij"
+    }
+  ],
+  "successMessage": "Doğrulandı, giriş yapılıyor..."
 }
