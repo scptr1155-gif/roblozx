@@ -1,1 +1,8 @@
-
+{
+  "id": "game1",
+  "name": "İlk Oyunum",
+  "description": "Bu bir test oyunudur.",
+  "thumbnail": "https://via.placeholder.com/300x200",
+  "gameUrl": "https://senin-oyun-linkin.com/game1",
+  "version": "1.0.0"
+}
