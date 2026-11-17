@@ -2,5 +2,6 @@
   "siteName": "Vestel Güvenlik",
   "logoUrl": "https://upload.wikimedia.org/wikipedia/commons/thumb/c/c8/Vestel_logo.svg/512px-Vestel_logo.svg.png",
   "themeColor": "#00539b",
-  "successMessage": "Doğrulama Başarılı! Jeton oluşturuldu."
+  "apiUrl": "https://SENIN-CAPTCHA-SITENIN-LINKI.com",
+  "successMessage": "Robot olmadığınız onaylandı. Yönlendiriliyorsunuz..."
 }
